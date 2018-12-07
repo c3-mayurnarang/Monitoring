@@ -1,0 +1,31 @@
+http://thecloudperson.com/blog/monitoring-cassandra-with-prometheus/
+
+   34  cd opt
+   35  ls
+   36  cd /opt
+   37  ls
+   38  crontab -l
+   39  ls
+   40  mkdir jmx_exporter
+   41  cd jmx_exporter/
+   42  wget https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.3.0/jmx_prometheus_javaagent-0.3.0.jar
+   43  vi  cassandra.yml
+   44  cd /etc/cassandra/
+   45  ls
+   46  cd conf/
+   47  ls
+   48  cp  cassandra-env.sh cassandra-env.sh_orig
+   49  ls
+   50  cp cassandra-env.sh cassandra-env.sh_prom
+   51  vi *_prom
+   52  service opsagent stop
+   53  nodetool status
+   54  service cassandrqa stop
+   55  service cassandra stop
+   56  service cassandra start
+   57  cp cassandra-env.sh_prom  cassandra-env.sh
+   58  service cassandra stop
+   59  cp cassandra-env.sh_prom  cassandra-env.sh
+   60  service cassandra start
+   61  curl http://localhost:7070
+   62  history
