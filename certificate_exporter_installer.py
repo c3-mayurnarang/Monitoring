@@ -1,8 +1,8 @@
 #!/bin/bash
 set -x
 
-/sbin/service zk_exporter stop
-rm -rf /opt/monitoring/zk_exporter /etc/init.d/zk_exporter
+/sbin/service certificate_exporter stop
+rm -rf /opt/monitoring/certificate_exporter /etc/init.d/certificate_exporter
 
 pip=$(which pip)
 if [ ! $pip ];then
@@ -12,55 +12,76 @@ if [ ! $pip ];then
 fi
 pip install prometheus-client
 
-mkdir -p /opt/monitoring/zk_exporter
-cd /opt/monitoring/zk_exporter
+mkdir -p /opt/monitoring/certificate_exporter
+cd /opt/monitoring/certificate_exporter
 
-touch /opt/monitoring/zk_exporter/zk_exporter.log
+touch /opt/monitoring/certificate_exporter/certificate_exporter.log
 
-cat <<'EOF' >> /opt/monitoring/zk_exporter/zk_exporter
+cat <<'EOF' >> /opt/monitoring/certificate_exporter/certificate_exporter
 #!/usr/bin/python
-# prometheus exporter for zookeepers
-# exports dist space and data from port 2181
+# prometheus exporter for individual account master instance
+# exports certificate expiration for all elbs
+# instance iam policy requirements: IAM read, ELB read
 
-import os
-import subprocess
-from time import sleep
 from prometheus_client import start_http_server, Gauge
+from time import sleep
+import boto3
+import os
 from datetime import datetime
 
-log_file = '/opt/monitoring/zk_exporter/zk_exporter.log'
-ZK_LOG_DIR = '/var/zk'
-DATASOURCE = 'paas-data'
+log_file = '/opt/monitoring/certificate_exporter/certificate_exporter.log'
 
-if __name__ == "__main__":
-  gauge = Gauge('zookeeper_states', 'The current state of Zookeeper', ['zk_state', 'keyspace'])
-  start_http_server(7071)
+start_http_server(7080)
+gauge = Gauge('elb', 'Certificate expiration for each load balancer', ['name'])
+regions = ['us-east-1']
 
-  while True:
-    disk = os.statvfs(ZK_LOG_DIR)
-    percent = (disk.f_blocks - disk.f_bfree) * 100 / (disk.f_blocks - disk.f_bfree + disk.f_bavail) + 1
-    avail = (disk.f_blocks - disk.f_bfree) * disk.f_bsize
+while True:
 
-    gauge.labels('zk_log_dir_pct', DATASOURCE).set(percent)
-    gauge.labels('zk_log_dir_avail', DATASOURCE).set(avail)
+  now = datetime.today()
+  expiration = {}
 
-    sss = subprocess.Popen(['/bin/echo mntr | /usr/bin/nc localhost 2181'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    r = sss.stdout.readlines()
-    for i in r:
-        try:
-          mm = i.decode('utf-8').strip().split('\t')
-          if mm[1].isdigit():
-            gauge.labels(mm[0], DATASOURCE).set(int(mm[1]))
-        except Exception as e:
-          with open(log_file, "a") as log:
-            log.write(str(datetime.now()) + ': ' + str(i) + '\n' + str(e) + '\n')
+  try:
+    client = boto3.client('iam')
+    paginator = client.get_paginator('list_server_certificates')
+    for response in paginator.paginate():
+      data = response['ServerCertificateMetadataList']
+      for cert in data:
+        expiration[cert['ServerCertificateName']] = cert['Expiration']
+  except Exception as e:
+    with open(log_file, "a") as log:
+      log.write(str(datetime.now()) + ': getting cert expirations\n' + str(e) + '\n')
 
-    sleep(30)
+  certs = []
+
+  try:
+    for region in regions:
+      client = boto3.client('elb', region_name=region)
+      elbs = client.describe_load_balancers()['LoadBalancerDescriptions']
+      for elb in elbs:
+        name = elb['LoadBalancerName']
+        listeners = elb['ListenerDescriptions']
+        for listener in listeners:
+          listener = listener['Listener']
+          if 'SSLCertificateId' in listener:
+            cert = listener['SSLCertificateId'].split('/')[1]
+            certs.append((name, cert))
+  except Exception as e:
+    with open(log_file, "a") as log:
+      log.write(str(datetime.now()) + ': getting elb cert\n' + str(e) + '\n')
+    
+  try:
+    for elb, cert in certs:
+      gauge.labels(elb).set((expiration[cert].replace(tzinfo=None) - now).days)
+  except Exception as e:
+    with open(log_file, "a") as log:
+      log.write(str(datetime.now()) + ': setting gauge value\n' + str(e) + '\n')
+
+  sleep(86400)
 EOF
 
-chmod +x zk_exporter
+chmod +x certificate_exporter
 
-cat <<'EOF' >> /etc/init.d/zk_exporter
+cat <<'EOF' >> /etc/init.d/certificate_exporter
 #!/bin/sh
 ### BEGIN INIT INFO
 # Provides:          Certificate Exporter
@@ -70,9 +91,9 @@ cat <<'EOF' >> /etc/init.d/zk_exporter
 # Default-Stop:      0 1 6
 # Description:       Exports certificate information to server
 ### END INIT INFO
-  APP_PATH=/opt/monitoring/zk_exporter
-  APP_NAME=zk_exporter
-  APP_PORT=7071
+  APP_PATH=/opt/monitoring/certificate_exporter
+  APP_NAME=certificate_exporter
+  APP_PORT=7080
   USER=root
   ARGS=""
   [ -r /etc/default/$APP_NAME ] && . /etc/default/$APP_NAME
@@ -157,7 +178,7 @@ cat <<'EOF' >> /etc/init.d/zk_exporter
   esac
   exit 0
 EOF
-chmod +x /etc/init.d/zk_exporter
-/sbin/chkconfig --add zk_exporter
-/usr/bin/setsid /sbin/service zk_exporter start &
+chmod +x /etc/init.d/certificate_exporter
+/sbin/chkconfig --add certificate_exporter
+/usr/bin/setsid /sbin/service certificate_exporter start &
 sleep 1
