@@ -19,9 +19,8 @@ touch /opt/monitoring/master_exporter/master_exporter.log
 
 cat <<'EOF' >> /opt/monitoring/master_exporter/master_exporter
 #!/usr/bin/python
-# prometheus exporter to report login latency, old gen memory, and number of node.js nodes
-# Requirement: pip install prometheus_client
-# Nick Cogswell 11/9/18
+# prometheus exporter for master instances
+# exports login latency, old gen memory, and number of running node index.js processes
 
 from prometheus_client import start_http_server, Gauge
 from subprocess import Popen, PIPE, call

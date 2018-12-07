@@ -1,7 +1,6 @@
 #!/usr/bin/python
-# prometheus exporter to report zookeeper disk
-# Requirement: pip install prometheus_client
-# Nick Cogswell 11/9/18
+# prometheus exporter for zookeepers
+# exports dist space and data from port 2181
 
 import os
 import subprocess
@@ -9,7 +8,7 @@ from time import sleep
 from prometheus_client import start_http_server, Gauge
 from datetime import datetime
 
-log_file = '/opt/monitoring/master_exporter/master_exporter.log'
+log_file = '/opt/monitoring/zk_exporter/zk_exporter.log'
 ZK_LOG_DIR = '/var/zk'
 DATASOURCE = 'paas-data'
 
@@ -28,7 +27,12 @@ if __name__ == "__main__":
     sss = subprocess.Popen(['/bin/echo mntr | /usr/bin/nc localhost 2181'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     r = sss.stdout.readlines()
     for i in r:
-        mm = i.decode('utf-8').strip().split('\t')
-        if mm[1].isdigit():
-          gauge.labels(mm[0], DATASOURCE).set(int(mm[1]))
+        try:
+          mm = i.decode('utf-8').strip().split('\t')
+          if mm[1].isdigit():
+            gauge.labels(mm[0], DATASOURCE).set(int(mm[1]))
+        except Exception as e:
+          with open(log_file, "a") as log:
+            log.write(str(datetime.now()) + ': ' + str(i) + '\n' + str(e) + '\n')
+
     sleep(30)
