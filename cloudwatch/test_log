@@ -1,0 +1,16 @@
+2018-12-17 16:04:34.312715: exporting node load
+could not convert string to float: 
+stdout:
+
+stderr:
+cat: /proc/loadavg: No such file or directory
+
+
+2018-12-17 16:05:04.339477: exporting node load
+could not convert string to float: 
+stdout:
+
+stderr:
+cat: /proc/loadavg: No such file or directory
+
+
