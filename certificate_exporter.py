@@ -12,7 +12,7 @@ from datetime import datetime
 log_file = '/opt/monitoring/certificate_exporter/certificate_exporter.log'
 
 start_http_server(7080)
-gauge = Gauge('elb', 'Certificate expiration for each load balancer', ['name'])
+gauge = Gauge('elb', 'Certificate expiration for each load balancer', ['name','cert'])
 regions = ['us-east-1']
 
 while True:
@@ -51,7 +51,7 @@ while True:
     
   try:
     for elb, cert in certs:
-      gauge.labels(elb).set((expiration[cert].replace(tzinfo=None) - now).days)
+      gauge.labels(elb, cert).set((expiration[cert].replace(tzinfo=None) - now).days)
   except Exception as e:
     with open(log_file, "a") as log:
       log.write(str(datetime.now()) + ': setting gauge value\n' + str(e) + '\n')

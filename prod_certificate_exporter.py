@@ -11,7 +11,7 @@ from datetime import datetime
 
 log_file = '/opt/monitoring/prod_certificate_exporter/prod_certificate_exporter.log'
 start_http_server(7080)
-elb_gauge = Gauge('elb', 'Reports the certificate expiration for each elb in production account', ['name', 'envt'])
+elb_gauge = Gauge('elb', 'Reports the certificate expiration for each elb in production account', ['name', 'cert', 'envt'])
 certificate_gauge = Gauge('certificates', 'Reports expiration for each certification in production account', ['name', 'usage'])
 
 regions = ['us-east-1', 'us-west-2', 'eu-west-1']
@@ -76,7 +76,7 @@ while True:
 
   # Report all load balancers
   for elb, cert, envt in elb_certs:
-    elb_gauge.labels(elb, envt).set(expiration[cert])
+    elb_gauge.labels(elb, cert, envt).set(expiration[cert])
 
   # update once a day
   sleep(86400)
