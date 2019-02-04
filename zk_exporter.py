@@ -8,7 +8,7 @@ from time import sleep
 from prometheus_client import start_http_server, Gauge
 from datetime import datetime
 
-log_file = '/opt/monitoring/zk_exporter/zk_exporter.log'
+log_file = '/var/log/zk_exporter/zk_exporter.log'
 ZK_LOG_DIR = '/var/zk'
 DATASOURCE = 'paas-data'
 

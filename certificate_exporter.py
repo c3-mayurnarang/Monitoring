@@ -9,7 +9,7 @@ import boto3
 import os
 from datetime import datetime
 
-log_file = '/opt/monitoring/certificate_exporter/certificate_exporter.log'
+log_file = '/var/log/certificate_exporter/certificate_exporter.log'
 
 start_http_server(7080)
 gauge = Gauge('elb', 'Certificate expiration for each load balancer', ['name','cert'])

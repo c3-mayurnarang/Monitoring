@@ -9,7 +9,7 @@ from datetime import datetime
 
 timeout = 10
 url = 'https://c3iotdemo.c3-e.com/static/console/'
-log_file = '/opt/monitoring/master_exporter/master_exporter.log'
+log_file = '/var/log/master_exporter/master_exporter.log'
 
 if __name__ == "__main__":
   gauge = Gauge('login_stat', 'production certificates', ['login_state'])

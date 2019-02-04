@@ -6,11 +6,8 @@ rm -rf /opt/monitoring/master_exporter /etc/init.d/master_exporter
 
 pip=$(which pip)
 if [ ! $pip ];then
-  if [ $(readlink -e $(which python) | sed 's/.*python//') = 2.6 ];then
-    curl https://bootstrap.pypa.io/2.6/get-pip.py -o get-pip.py
-  else
-    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-  fi
+  #curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+  curl https://bootstrap.pypa.io/2.6/get-pip.py -o get-pip.py
   python get-pip.py
   rm get-pip.py
 fi
@@ -19,8 +16,7 @@ pip install prometheus-client
 mkdir -p /opt/monitoring/master_exporter
 cd /opt/monitoring/master_exporter
 
-mkdir -p /var/log/master_exporter
-touch /var/log/master_exporter/master_exporter.log
+touch /opt/monitoring/master_exporter/master_exporter.log
 
 cat <<'EOF' >> /opt/monitoring/master_exporter/master_exporter
 #!/usr/bin/python
@@ -34,7 +30,7 @@ from datetime import datetime
 
 timeout = 10
 url = 'https://c3iotdemo.c3-e.com/static/console/'
-log_file = '/var/log/master_exporter/master_exporter.log'
+log_file = '/opt/monitoring/master_exporter/master_exporter.log'
 
 if __name__ == "__main__":
   gauge = Gauge('login_stat', 'production certificates', ['login_state'])

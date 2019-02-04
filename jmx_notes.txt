@@ -36,3 +36,8 @@ echo 'JVM_OPTS="$JVM_OPTS -javaagent:'$PWD/jmx_prometheus_javaagent-0.3.0.jar=70
 /opt/monitoring/jmx_exporter
 /etc/cassandra/conf
 echo 'JVM_OPTS="$JVM_OPTS -javaagent:/opt/monitoring/jmx_exporter/jmx_prometheus_javaagent-0.3.0.jar=7070:/opt/monitoring/jmx_exporter/cassandra.yml"' >> /etc/cassandra/conf/cassandra-env.sh
+
+
+
+nodetool status
+run this command to see if the node is up U... or down D...

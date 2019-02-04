@@ -9,7 +9,7 @@ from time import sleep
 import boto3
 from datetime import datetime
 
-log_file = '/opt/monitoring/prod_certificate_exporter/prod_certificate_exporter.log'
+log_file = '/var/log/prod_certificate_exporter/prod_certificate_exporter.log'
 start_http_server(7080)
 elb_gauge = Gauge('elb', 'Reports the certificate expiration for each elb in production account', ['name', 'cert', 'envt'])
 certificate_gauge = Gauge('certificates', 'Reports expiration for each certification in production account', ['name', 'usage'])

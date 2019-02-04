@@ -15,8 +15,7 @@ pip install prometheus-client
 mkdir -p /opt/monitoring/zk_exporter
 cd /opt/monitoring/zk_exporter
 
-mkdir -p /var/log/zk_exporter
-touch /var/log/zk_exporter/zk_exporter.log
+touch /opt/monitoring/zk_exporter/zk_exporter.log
 
 cat <<'EOF' >> /opt/monitoring/zk_exporter/zk_exporter
 #!/usr/bin/python
@@ -29,7 +28,7 @@ from time import sleep
 from prometheus_client import start_http_server, Gauge
 from datetime import datetime
 
-log_file = '/var/log/zk_exporter/zk_exporter.log'
+log_file = '/opt/monitoring/zk_exporter/zk_exporter.log'
 ZK_LOG_DIR = '/var/zk'
 DATASOURCE = 'paas-data'
 
