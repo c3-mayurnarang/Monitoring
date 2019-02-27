@@ -5,9 +5,9 @@ set -x
 CUST_NAME="prod"
 ENV_NAME="bge"
 ENV_REGION="us-east-1"
-AWS_CRED_ID="AKIAJCLJMCLBMIRDPRLA"
-AWS_CRED_KEY="24628BmUwJtk1jYM+MXeYSIo7x8P9S6Qybcm3oFu"
-HTACCESS="c3monitoring:$apr1$PlhufP9j$/18g3xuMav7JeCf5L6vTI/"
+AWS_CRED_ID=""
+AWS_CRED_KEY=""
+HTACCESS=""
 # END MANDATORY VARIABLE
 # START SCRIPT
 PROMETHEUS_FILE=/opt/monitoring/prometheus/current/prometheus.yml
